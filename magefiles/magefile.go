@@ -26,7 +26,6 @@ var golangCILintVer = "v1.48.0"                                    // https://gi
 var gosImportsVer = "v0.3.1"                                       // https://github.com/rinchsan/gosimports/releases/tag/v0.3.1
 
 var errCommitFormatting = errors.New("files not formatted, please commit formatting changes")
-var errNoGitDir = errors.New("no .git directory found")
 
 func init() {
 	for _, check := range []func() error{
@@ -193,6 +192,9 @@ func Build() error {
 	}
 	if os.Getenv("MEMSTATS") == "true" {
 		buildTags = append(buildTags, "memstats")
+	}
+	if os.Getenv("MEMOIZE_BUILDERS") != "false" {
+		buildTags = append(buildTags, "memoize_builders")
 	}
 
 	buildTagArg := fmt.Sprintf("-tags='%s'", strings.Join(buildTags, " "))
