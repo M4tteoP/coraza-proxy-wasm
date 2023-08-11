@@ -245,9 +245,16 @@ func Ftw() error {
 	return sh.RunWithV(env, "docker-compose", "--file", "ftw/docker-compose.yml", "run", "--rm", task)
 }
 
+var exampleCmd = []string{"--file", "example/docker-compose.yml", "up"}
+
 // RunExample spins up the test environment, access at http://localhost:8080. Requires docker-compose.
 func RunExample() error {
-	return sh.RunWithV(map[string]string{"ENVOY_IMAGE": os.Getenv("ENVOY_IMAGE")}, "docker-compose", "--file", "example/docker-compose.yml", "up", "-d", "envoy-logs")
+	return sh.RunWithV(map[string]string{"ENVOY_IMAGE": os.Getenv("ENVOY_IMAGE")}, "docker-compose", exampleCmd...)
+}
+
+// RunExampleD spins up the test environment in detached mode, access at http://localhost:8080. Requires docker-compose.
+func RunExampleD() error {
+	return sh.RunWithV(map[string]string{"ENVOY_IMAGE": os.Getenv("ENVOY_IMAGE")}, "docker-compose", append(exampleCmd, "-d")...)
 }
 
 // TeardownExample tears down the test environment. Requires docker-compose.

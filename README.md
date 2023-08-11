@@ -18,6 +18,7 @@ Targets:
   ftw                runs ftw tests with a built plugin and Envoy.
   lint               verifies code quality.
   runExample         spins up the test environment, access at http://localhost:8080.
+  runExampleD        spins up the test environment in detached mode, access at http://localhost:8080.
   teardownExample    tears down the test environment.
   test               runs all unit tests.
 
@@ -25,8 +26,10 @@ Targets:
 ```
 
 ### Building requirements
+
 Building the filter requires:
-- [Go](https://go.dev/doc/install) 
+
+- [Go](https://go.dev/doc/install)
 - [TinyGo](https://tinygo.org/getting-started/install/)
 
 Up to date required versions can be found looking at [`minGoVersion` and `tinygoMinorVersion` variables](./magefiles/magefile.go).
@@ -155,7 +158,7 @@ FTW_INCLUDE=920410 go run mage.go ftw
 
 ## Example: Spinning up the coraza-wasm-filter for manual tests
 
-Once the filter is built, via the commands `mage runExample`, `mage reloadExample`, and `mage teardownExample` you can spin up, test, and tear down the test environment. Envoy with the coraza-wasm filter will be reachable at `localhost:8080`. The filter is configured with the CRS loaded working in Anomaly Scoring mode. For details and locally tweaking the configuration refer to [@demo-conf](./wasmplugin/rules/coraza-demo.conf) and [@crs-setup-demo-conf](./wasmplugin/rules/crs-setup-demo.conf).
+Once the filter is built, via the commands `mage runExampleD`, `mage reloadExample`, and `mage teardownExample` you can spin up, test, and tear down the test environment. Envoy with the coraza-wasm filter will be reachable at `localhost:8080`. The filter is configured with the CRS loaded working in Anomaly Scoring mode. For details and locally tweaking the configuration refer to [@demo-conf](./wasmplugin/rules/coraza-demo.conf) and [@crs-setup-demo-conf](./wasmplugin/rules/crs-setup-demo.conf).
 In order to monitor envoy logs while performing requests you can run:
 
 - Envoy logs: `docker-compose -f ./example/docker-compose.yml logs -f envoy-logs`.
