@@ -639,7 +639,7 @@ func (ctx *httpContext) OnHttpStreamDone() {
 	}
 }
 
-const noGRPCStream int32 = -1
+const GRPCStreamPermissionDenied int32 = 7
 const defaultInterruptionStatusCode int = 403
 
 func (ctx *httpContext) handleInterruption(phase interruptionPhase, interruption *ctypes.Interruption) types.Action {
@@ -664,7 +664,7 @@ func (ctx *httpContext) handleInterruption(phase interruptionPhase, interruption
 	if statusCode == 0 {
 		statusCode = defaultInterruptionStatusCode
 	}
-	if err := proxywasm.SendHttpResponse(uint32(statusCode), nil, nil, noGRPCStream); err != nil {
+	if err := proxywasm.SendHttpResponse(uint32(statusCode), nil, nil, GRPCStreamPermissionDenied); err != nil {
 		panic(err)
 	}
 
