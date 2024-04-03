@@ -226,11 +226,11 @@ func Build() error {
 // E2e runs e2e tests with a built plugin against the example deployment. Requires docker-compose.
 func E2e() error {
 	var err error
-	if err = sh.RunV("docker compose", "--file", "e2e/docker-compose.yml", "up", "-d", "envoy"); err != nil {
+	if err = sh.RunV("docker-compose", "--file", "e2e/docker-compose.yml", "up", "-d", "envoy"); err != nil {
 		return err
 	}
 	defer func() {
-		_ = sh.RunV("docker compose", "--file", "e2e/docker-compose.yml", "down", "-v")
+		_ = sh.RunV("docker-compose", "--file", "e2e/docker-compose.yml", "down", "-v")
 	}()
 
 	envoyHost := os.Getenv("ENVOY_HOST")
