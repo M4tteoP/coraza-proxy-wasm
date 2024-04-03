@@ -20,8 +20,8 @@ env:
     envoyproxy/envoy:v1.29-latest
     envoyproxy/envoy:v1.28-latest
     envoyproxy/envoy-dev:latest
-    istio/proxyv2:1.20.3
     istio/proxyv2:1.20.4
+    istio/proxyv2:1.21.0
 
 jobs:
   build:
