@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - multibuild_fork
     tags:
       - "*"
     paths-ignore:
