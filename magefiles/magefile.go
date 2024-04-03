@@ -245,18 +245,18 @@ func E2e() error {
 	// --nulled-body is needed because coraza-proxy-wasm returns a 200 OK with a nulled body when if the interruption happens after phase 3
 	if err = sh.RunV("go", "run", "github.com/corazawaf/coraza/v3/http/e2e/cmd/httpe2e@main", "--proxy-hostport",
 		"http://"+envoyHost, "--httpbin-hostport", "http://"+httpbinHost, "--nulled-body"); err != nil {
-		sh.RunV("docker-compose", "-f", "e2e/docker-compose.yml", "logs", "envoy")
+		sh.RunV("docker", "compose", "-f", "e2e/docker-compose.yml", "logs", "envoy")
 	}
 	return err
 }
 
 // Ftw runs ftw tests with a built plugin and Envoy. Requires docker-compose.
 func Ftw() error {
-	if err := sh.RunV("docker-compose", "--file", "ftw/docker-compose.yml", "build", "--pull"); err != nil {
+	if err := sh.RunV("docker", "compose", "--file", "ftw/docker-compose.yml", "build", "--pull"); err != nil {
 		return err
 	}
 	defer func() {
-		_ = sh.RunV("docker-compose", "--file", "ftw/docker-compose.yml", "down", "-v")
+		_ = sh.RunV("docker", "compose", "--file", "ftw/docker-compose.yml", "down", "-v")
 	}()
 	env := map[string]string{
 		"FTW_CLOUDMODE": os.Getenv("FTW_CLOUDMODE"),
@@ -270,7 +270,7 @@ func Ftw() error {
 	if os.Getenv("MEMSTATS") == "true" {
 		task = "ftw-memstats"
 	}
-	return sh.RunWithV(env, "docker-compose", "--file", "ftw/docker-compose.yml", "run", "--rm", task)
+	return sh.RunWithV(env, "docker", "compose", "--file", "ftw/docker-compose.yml", "run", "--rm", task)
 }
 
 // RunEnvoyExample spins up the test environment of envoy, access at http://localhost:8080. Requires docker-compose.
@@ -280,12 +280,12 @@ func RunEnvoyExample() error {
 
 // TeardownEnvoyExample tears down the test environment of envoy. Requires docker-compose.
 func TeardownEnvoyExample() error {
-	return sh.RunV("docker-compose", "--file", "example/envoy/docker-compose.yml", "down")
+	return sh.RunV("docker", "compose", "--file", "example/envoy/docker-compose.yml", "down")
 }
 
 // ReloadEnvoyExample reload the test environment (container) of envoy in case of envoy or wasm update. Requires docker-compose
 func ReloadEnvoyExample() error {
-	return sh.RunV("docker-compose", "--file", "example/envoy/docker-compose.yml", "restart")
+	return sh.RunV("docker", "compose", "--file", "example/envoy/docker-compose.yml", "restart")
 }
 
 var Default = Build
