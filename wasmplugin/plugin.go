@@ -350,26 +350,33 @@ func (ctx *httpContext) OnHttpRequestHeaders(numHeaders int, endOfStream bool) t
 }
 
 func (ctx *httpContext) OnHttpRequestBody(bodySize int, endOfStream bool) types.Action {
+	ctx.logger.Error().Msg("OnHttpRequestBody PAUSED")
+	return types.ActionPause
 	defer logTime("OnHttpRequestBody", currentTime())
+	ctx.logger.Error().Msg("OnHttpRequestBody START")
 
 	if ctx.interruptedAt.isInterrupted() {
 		ctx.logger.Error().
 			Str("interruption_handled_phase", ctx.interruptedAt.String()).
 			Msg("Interruption already handled")
+		ctx.logger.Error().Msg("OnHttpRequestBody PAUSE 1")
 		return types.ActionPause
 	}
 
 	if ctx.processedRequestBody {
+		ctx.logger.Error().Msg("OnHttpRequestBody CONTINUE 1")
 		return types.ActionContinue
 	}
 
 	if ctx.tx == nil {
+		ctx.logger.Error().Msg("OnHttpRequestBody CONTINUE 2")
 		return types.ActionContinue
 	}
 
 	tx := ctx.tx
 
 	if tx.IsRuleEngineOff() {
+		ctx.logger.Error().Msg("OnHttpRequestBody CONTINUE 3")
 		return types.ActionContinue
 	}
 
@@ -381,13 +388,15 @@ func (ctx *httpContext) OnHttpRequestBody(bodySize int, endOfStream bool) types.
 		interruption, err := tx.ProcessRequestBody()
 		if err != nil {
 			ctx.logger.Error().Err(err).Msg("Failed to process request body")
+			ctx.logger.Error().Msg("OnHttpRequestBody CONTINUE 4")
 			return types.ActionContinue
 		}
 
 		if interruption != nil {
+			ctx.logger.Error().Msg("OnHttpRequestBody HANDLE INTERRUPTION 1")
 			return ctx.handleInterruption(interruptionPhaseHttpRequestBody, interruption)
 		}
-
+		ctx.logger.Error().Msg("OnHttpRequestBody CONTINUE 5")
 		return types.ActionContinue
 	}
 
@@ -402,6 +411,7 @@ func (ctx *httpContext) OnHttpRequestBody(bodySize int, endOfStream bool) types.
 				Int("body_read_index", ctx.bodyReadIndex).
 				Int("chunk_size", chunkSize).
 				Msg("Failed to read request body")
+			ctx.logger.Error().Msg("OnHttpRequestBody CONTINUE 6")
 			return types.ActionContinue
 		}
 		readchunkSize := len(bodyChunk)
@@ -411,9 +421,11 @@ func (ctx *httpContext) OnHttpRequestBody(bodySize int, endOfStream bool) types.
 		interruption, writtenBytes, err := tx.WriteRequestBody(bodyChunk)
 		if err != nil {
 			ctx.logger.Error().Err(err).Msg("Failed to write request body")
+			ctx.logger.Error().Msg("OnHttpRequestBody CONTINUE 7")
 			return types.ActionContinue
 		}
 		if interruption != nil {
+			ctx.logger.Error().Msg("OnHttpRequestBody HANDLE INTERRUPTION 2")
 			return ctx.handleInterruption(interruptionPhaseHttpRequestBody, interruption)
 		}
 
@@ -423,6 +435,7 @@ func (ctx *httpContext) OnHttpRequestBody(bodySize int, endOfStream bool) types.
 			// No further body data will be processed
 			// Setting processedRequestBody avoid to call more than once ProcessRequestBody
 			ctx.processedRequestBody = true
+			ctx.logger.Error().Msg("OnHttpRequestBody CONTINUE 8")
 			return types.ActionContinue
 		}
 
@@ -437,35 +450,37 @@ func (ctx *httpContext) OnHttpRequestBody(bodySize int, endOfStream bool) types.
 			ctx.logger.Error().
 				Err(err).
 				Msg("Failed to process request body")
+			ctx.logger.Error().Msg("OnHttpRequestBody CONTINUE 9")
 			return types.ActionContinue
 		}
 		if interruption != nil {
+			ctx.logger.Error().Msg("OnHttpRequestBody HANDLE INTERRUPTION 3")
 			return ctx.handleInterruption(interruptionPhaseHttpRequestBody, interruption)
 		}
-
+		ctx.logger.Error().Msg("OnHttpRequestBody CONTINUE 10")
 		return types.ActionContinue
 	}
-
+	ctx.logger.Error().Msg("OnHttpRequestBody PAUSE 4")
 	return types.ActionPause
 }
 
-func (ctx *httpContext) OnHttpRequestTrailers(numTrailers int) types.Action {
-	defer logTime("OnHttpRequestTrailers", currentTime())
+// func (ctx *httpContext) OnHttpRequestTrailers(numTrailers int) types.Action {
+// 	defer logTime("OnHttpRequestTrailers", currentTime())
 
-	// If no payload was collected so far, then there is nothing to do.
-	if ctx.bodyReadIndex == 0 {
-		return types.ActionContinue
-	}
+// 	// If no payload was collected so far, then there is nothing to do.
+// 	if ctx.bodyReadIndex == 0 {
+// 		return types.ActionContinue
+// 	}
 
-	// The end_of_stream parameter from OnHttpRequestBody is never set to true
-	// in HTTP2 if the trailers are available. In all other cases, the end_of_stream
-	// indicates that the payload has been collected. In HTTP2 request with trailers,
-	// the call of OnHttpRequestTrailers indicate that the payload was collected.
-	//
-	// Without that, it is possible to bypass request body inspection by adding
-	// any random trailer to HTTP2 request.
-	return ctx.OnHttpRequestBody(ctx.bodyReadIndex, true)
-}
+// 	// The end_of_stream parameter from OnHttpRequestBody is never set to true
+// 	// in HTTP2 if the trailers are available. In all other cases, the end_of_stream
+// 	// indicates that the payload has been collected. In HTTP2 request with trailers,
+// 	// the call of OnHttpRequestTrailers indicate that the payload was collected.
+// 	//
+// 	// Without that, it is possible to bypass request body inspection by adding
+// 	// any random trailer to HTTP2 request.
+// 	return ctx.OnHttpRequestBody(ctx.bodyReadIndex, true)
+// }
 
 func (ctx *httpContext) OnHttpResponseHeaders(numHeaders int, endOfStream bool) types.Action {
 	defer logTime("OnHttpResponseHeaders", currentTime())
